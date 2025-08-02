@@ -1,13 +1,20 @@
 const urlService = require('../services/urlService');
-const { successResponse, errorResponse } = require('../utils/responseHelper');
 
 class UrlController {
   async testRoute(req, res) {
     try {
       const result = await urlService.getTestMessage();
-      return successResponse(res, result, 'Test route accessed successfully');
+      
+      return res.json({
+        success: true,
+        message: 'Test route controller',
+        data: result
+      });
     } catch (error) {
-      return errorResponse(res, error.message, 500);
+      return res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
   }
 }

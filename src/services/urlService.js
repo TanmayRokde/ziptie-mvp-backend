@@ -1,7 +1,7 @@
 class UrlService {
   async getTestMessage() {
     return {
-      message: 'Test route SERVICE working successfully!',
+      message: 'Test route SERVICE',
     };
   }
 }

@@ -1,10 +1,10 @@
 const express = require('express');
 const urlController = require('../controllers/urlController');
-
+const AuthMiddleware = require('../middleware/auth')
 const router = express.Router();
 
-router.get('/test', (req, res) => {
-  urlController.testRoute(req, res);
-});
+router.use(AuthMiddleware.authenticatePrivateKey);
+
+router.get('/test', urlController.testRoute);
 
 module.exports = router;
