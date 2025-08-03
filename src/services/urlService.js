@@ -1,9 +1,7 @@
-class UrlService {
-  async getTestMessage() {
+module.exports = {
+  getTestMessage: async () => {
     return {
       message: 'Test route SERVICE',
     };
   }
-}
-
-module.exports = new UrlService();
+};

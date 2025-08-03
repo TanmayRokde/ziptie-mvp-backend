@@ -1,16 +1,16 @@
 const crypto = require('crypto');
 
-class apiKeysGenerator {
-  static generateKeyPair() {
+module.exports = {
+  generateKeyPair: () => {
     const { publicKey, privateKey } = crypto.generateKeyPairSync('ec', {
       namedCurve: 'secp256k1',
       publicKeyEncoding: { type: 'spki', format: 'pem' },
       privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
     });
     return { publicKey, privateKey };
-  }
+  },
 
-  static generatePublicKeyFromPrivate(privateKey) {
+  generatePublicKeyFromPrivate: (privateKey) => {
     try {
       // Create key object from private key
       const keyObject = crypto.createPrivateKey({
@@ -32,14 +32,12 @@ class apiKeysGenerator {
       console.error('Error generating public key from private key:', error.message);
       return null;
     }
-  }
+  },
 
   // Create a hash of public key for storing in redis
-  static createPublicKeyHash(publicKey) {
+  createPublicKeyHash: (publicKey) => {
     const hash = crypto.createHash('sha256');
     hash.update(publicKey);
     return hash.digest('hex');
   }
-}
-
-module.exports = apiKeysGenerator;
+};

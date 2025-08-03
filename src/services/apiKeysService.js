@@ -1,8 +1,8 @@
 const apiKeysDao = require('../dao/apiKeysDao');
 const apiKeysGenerator = require('../utils/apiKeysGenerator');
 
-class apiKeysService {
-  async generateAndStoreKey() {
+module.exports = {
+  generateAndStoreKey: async () => {
     try {
       const { publicKey, privateKey } = apiKeysGenerator.generateKeyPair();
       const result = await apiKeysDao.storePublicKey(publicKey);
@@ -20,9 +20,9 @@ class apiKeysService {
     } catch (error) {
       throw new Error(`Key generation failed: ${error.message}`);
     }
-  }
+  },
 
-  async authenticateWithPrivateKey(privateKey) {
+  authenticateWithPrivateKey: async (privateKey) => {
     try {
       // generate public key from from private key
       const publicKey = apiKeysGenerator.generatePublicKeyFromPrivate(privateKey);
@@ -41,6 +41,4 @@ class apiKeysService {
       return { valid: false, reason: error.message };
     }
   }
-}
-
-module.exports = new apiKeysService();
+};

@@ -1,7 +1,7 @@
 const apiKeysService = require('../services/apiKeysService');
 
-class KeyController {
-  async generateKey(req, res) {
+module.exports = {
+  generateKey: async (req, res) => {
     try {
       const result = await apiKeysService.generateAndStoreKey();
       
@@ -30,5 +30,3 @@ class KeyController {
   }
 
 }
-
-module.exports = new KeyController();

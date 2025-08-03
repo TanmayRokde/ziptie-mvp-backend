@@ -1,7 +1,7 @@
 const apiKeysService = require('../services/apiKeysService');
 
-class AuthMiddleware {
-  async authenticatePrivateKey(req, res, next) {
+module.exports = {
+  authenticatePrivateKey: async (req, res, next) => {
     try {
       let privateKey = req.headers['private-key'];
       
@@ -37,6 +37,4 @@ class AuthMiddleware {
       });
     }
   }
-}
-
-module.exports = new AuthMiddleware();
+};

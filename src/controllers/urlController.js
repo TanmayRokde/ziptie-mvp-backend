@@ -1,7 +1,7 @@
 const urlService = require('../services/urlService');
 
-class UrlController {
-  async testRoute(req, res) {
+module.exports = {
+  testRoute: async (req, res) => {
     try {
       const result = await urlService.getTestMessage();
       
@@ -17,6 +17,4 @@ class UrlController {
       });
     }
   }
-}
-
-module.exports = new UrlController();
+};

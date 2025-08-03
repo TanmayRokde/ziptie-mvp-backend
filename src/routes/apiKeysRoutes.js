@@ -3,6 +3,6 @@ const apiKeysController = require('../controllers/apiKeysController');
 
 const router = express.Router();
 
-router.post('/generate', apiKeysController.generateKey);
+router.get('/generate', apiKeysController.generateKey);
 
 module.exports = router;

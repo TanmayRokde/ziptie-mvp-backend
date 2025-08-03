@@ -1,44 +1,41 @@
 const redisConfig = require('../config/redis');
 const apiKeysGenerator = require('../utils/apiKeysGenerator');
 
-class apiKeyDao {
-  constructor() {
-    this.redis = null;
-    this.TTL_SECONDS = 3600;
-  }
+let redis = null;
+const TTL_SECONDS = 3600;
 
-  async init() {
-    if (!this.redis) {
-      this.redis = redisConfig.getClient();
-      await redisConfig.connect();
-    }
+const init = async () => {
+  if (!redis) {
+    redis = redisConfig.getClient();
   }
+};
 
-  async storePublicKey(publicKey) {
-    await this.init();
+module.exports = {
+  storePublicKey: async (publicKey) => {
+    await init();
     
     try {
       //create hash
       const keyHash = apiKeysGenerator.createPublicKeyHash(publicKey);
       const redisKey = `pubkey:${keyHash}`;
       // store hash
-      await this.redis.setEx(redisKey, this.TTL_SECONDS, publicKey);
+      await redis.setEx(redisKey, TTL_SECONDS, publicKey);
     
-      return { success: true, keyHash, ttl: this.TTL_SECONDS };
+      return { success: true, keyHash, ttl: TTL_SECONDS };
       
     } catch (error) {
       return { success: false, error: error.message };
     }
-  }
+  },
 
-  async checkPublicKey(publicKey) {
-    await this.init();
+  checkPublicKey: async (publicKey) => {
+    await init();
     
     try {
       const keyHash = apiKeysGenerator.createPublicKeyHash(publicKey);
       const redisKey = `pubkey:${keyHash}`;
       // check public key hash
-      const storedPublicKey = await this.redis.get(redisKey);
+      const storedPublicKey = await redis.get(redisKey);
       
       if (!storedPublicKey) {
         return { found: false };
@@ -50,6 +47,4 @@ class apiKeyDao {
       return { found: false, error: error.message };
     }
   }
-}
-
-module.exports = new apiKeyDao();
+};
