@@ -1,5 +1,5 @@
 const express = require('express');
-const shortlinkController=require("../controllers/shortlinkController")
+const shortlinkController = require('../controllers/shortlinkController');
 // const AuthMiddleware = require('../middleware/auth')
 const router = express.Router();
 
