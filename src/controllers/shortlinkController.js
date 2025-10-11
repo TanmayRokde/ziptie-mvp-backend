@@ -1,4 +1,4 @@
-const shortlinkService = require('../services/linkService');
+const shortlinkService = require('../services/shortlinkService');
 
 module.exports = {
     createShortUrl : async (req, res) => {
@@ -28,7 +28,7 @@ module.exports = {
             });
           }
       
-          const result = await linkService.createShortUrl({
+          const result = await shortlinkService.createShortUrl({
             longUrl,
             userId,
             ttl: ttlNumber
@@ -39,7 +39,7 @@ module.exports = {
             data: result
           });
         } catch (error) {
-          console.error('[linkController:createShortUrl]', error);
+          console.error('[shortlinkController:createShortUrl]', error);
           return res.status(500).json({
             success: false,
             message: error.message

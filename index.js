@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const morgan = require('morgan');
 const redisConfig = require('./src/config/redis');
 const routes = require('./src/routes');
 
@@ -12,6 +13,7 @@ redisConfig.connect()
 app.use(helmet());
 app.use(cors());
 app.use(express.json());
+app.use(morgan('dev'));
 
 app.use('/api', routes);
 

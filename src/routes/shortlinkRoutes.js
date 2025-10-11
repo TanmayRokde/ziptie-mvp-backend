@@ -1,10 +1,10 @@
 const express = require('express');
-const urlController = require('../controllers/urlController');
+const shortlinkController=require("../controllers/shortlinkController")
 // const AuthMiddleware = require('../middleware/auth')
 const router = express.Router();
 
 // router.use(AuthMiddleware.authenticatePrivateKey);
 
-router.get('/shorten', urlController.testRoute);
+router.post('/shorten', shortlinkController.createShortUrl);
 
 module.exports = router;
