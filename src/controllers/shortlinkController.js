@@ -3,7 +3,7 @@ const shortlinkService = require('../services/shortlinkService');
 module.exports = {
     createShortUrl : async (req, res) => {
         try {
-          const { longUrl, userId, ttl } = req.body;
+          const { longUrl, userId, ttl, domain, pathPrefix } = req.body;
       
           // Validation
           if (!longUrl || typeof longUrl !== 'string') {
@@ -33,6 +33,14 @@ module.exports = {
             userId,
             ttl: ttlNumber
           });
+
+          if (result && result.shortKey && domain) {
+            const normalizedDomain = domain.replace(/\/+$/, '');
+            const normalizedPrefix = pathPrefix
+              ? `/${pathPrefix.replace(/^\/+|\/+$/g, '')}`
+              : '';
+            result.shortUrl = `${normalizedDomain}${normalizedPrefix}/${result.shortKey}`;
+          }
       
           return res.status(201).json({
             success: true,

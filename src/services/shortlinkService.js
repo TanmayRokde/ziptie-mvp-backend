@@ -3,9 +3,6 @@ const axios = require('axios');
 module.exports = {
     createShortUrl : async ({ longUrl, userId, ttl }) => {
     try {
-      console.log("here")
-      console.log("proc :", process.env.URL_SHORTENER_SERVICE_URL);
-      
           const response = await axios.post(`${process.env.URL_SHORTENER_SERVICE_URL}/shorten`, {
             longUrl,
             userId,
@@ -21,4 +18,3 @@ module.exports = {
         }
       }
 }
-
