@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../lib/prisma');
 const apiKeysService = require('./apiKeysService');
+const apiKeysGenerator = require('../utils/apiKeysGenerator');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'ziptie-dev-secret';
 const TOKEN_EXPIRY = process.env.JWT_EXPIRY || '7d';
@@ -32,12 +33,15 @@ module.exports = {
     const keyResult = await apiKeysService.generateAndStoreKey();
     const base64PrivateKey = Buffer.from(keyResult.privateKey).toString('base64');
 
+    // Generate public key from private key to store in PostgreSQL
+    const publicKey = apiKeysGenerator.generatePublicKeyFromPrivate(keyResult.privateKey);
+
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         name,
         passwordHash,
-        apiKey: base64PrivateKey
+        apiKey: publicKey
       }
     });
 
@@ -70,7 +74,7 @@ module.exports = {
     return {
       user: toSafeUser(user),
       token,
-      privateKey: user.apiKey
+      publicKey: user.apiKey  // Return public key, user should already have their private key from signup
     };
   },
 

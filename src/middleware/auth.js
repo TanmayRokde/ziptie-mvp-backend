@@ -19,7 +19,7 @@ module.exports = {
 
       // Authenticate
       const authResult = await apiKeysService.authenticateWithPrivateKey(privateKey);
-      
+
       if (!authResult.valid) {
         return res.status(401).json({
           success: false,
@@ -27,7 +27,10 @@ module.exports = {
         });
       }
 
+      // Attach user and authentication info to request
       req.authenticated = true;
+      req.user = authResult.user;
+      req.publicKey = authResult.publicKey;
       next();
       
     } catch (error) {

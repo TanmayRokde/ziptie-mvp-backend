@@ -21,7 +21,7 @@ module.exports = {
       });
       
     } catch (error) {
-      console.error('❌ Key generation error:', error.message);
+      console.error('Key generation error:', error.message);
       return res.status(500).json({
         success: false,
         message: `Key generation failed: ${error.message}`
