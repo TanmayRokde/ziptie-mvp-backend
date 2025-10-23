@@ -30,18 +30,18 @@ module.exports = {
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
 
-    const keyResult = await apiKeysService.generateAndStoreKey();
-    const base64PrivateKey = Buffer.from(keyResult.privateKey).toString('base64');
+    // const keyResult = await apiKeysService.generateAndStoreKey();
+    // const base64PrivateKey = Buffer.from(keyResult.privateKey).toString('base64');
 
     // Generate public key from private key to store in PostgreSQL
-    const publicKey = apiKeysGenerator.generatePublicKeyFromPrivate(keyResult.privateKey);
+    // const publicKey = apiKeysGenerator.generatePublicKeyFromPrivate(keyResult.privateKey);
 
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         name,
         passwordHash,
-        apiKey: publicKey
+        // apiKey: publicKey
       }
     });
 
@@ -50,8 +50,8 @@ module.exports = {
     return {
       user: toSafeUser(user),
       token,
-      privateKey: base64PrivateKey,
-      keyExpiresIn: keyResult.ttl
+      // privateKey: base64PrivateKey,
+      // keyExpiresIn: keyResult.ttl
     };
   },
 
@@ -74,7 +74,7 @@ module.exports = {
     return {
       user: toSafeUser(user),
       token,
-      publicKey: user.apiKey  // Return public key, user should already have their private key from signup
+      // publicKey: user.apiKey  
     };
   },
 
@@ -96,7 +96,7 @@ module.exports = {
       id: user.id,
       email: user.email,
       name: user.name,
-      apiKey: user.apiKey,
+      // apiKey: user.apiKey,
       domains: user.domains.map((domain) => ({
         id: domain.id,
         domain: domain.domain,
