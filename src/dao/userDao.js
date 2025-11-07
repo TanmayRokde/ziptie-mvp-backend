@@ -36,5 +36,26 @@ module.exports = {
     } catch (error) {
       return { found: false, error: error.message };
     }
+  },
+
+  getLatestUserDomain: async (userId) => {
+    try {
+      const domain = await prisma.domain.findFirst({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          domain: true,
+          pathPrefix: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      });
+
+      return { success: true, domain };
+    } catch (error) {
+      console.error('Error fetching latest user domain:', error.message);
+      return { success: false, error: error.message, domain: null };
+    }
   }
 };

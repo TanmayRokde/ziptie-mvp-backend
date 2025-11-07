@@ -1,25 +1,21 @@
 const shortlinkService = require('../services/shortlinkService');
+const userDao = require('../dao/userDao');
+
+const DEFAULT_DOMAIN = process.env.DEFAULT_DOMAIN;
 
 module.exports = {
     createShortUrl : async (req, res) => {
         try {
-          const { longUrl, userId, ttl, domain, pathPrefix } = req.body;
-      
-          // Validation
+          const { longUrl, ttl } = req.body;
+          const userId = req.user.id; 
+
           if (!longUrl || typeof longUrl !== 'string') {
             return res.status(400).json({
               success: false,
               message: 'Long URL is required'
             });
           }
-      
-          if (!userId || typeof userId !== 'string') {
-            return res.status(400).json({
-              success: false,
-              message: 'User ID is required'
-            });
-          }
-      
+
           const ttlNumber = Number(ttl);
           if (!Number.isInteger(ttlNumber) || ttlNumber <= 0) {
             return res.status(400).json({
@@ -27,21 +23,36 @@ module.exports = {
               message: 'TTL must be a positive integer'
             });
           }
-      
+
+          // Fetch user's latest domain using DAO
+          const domainResult = await userDao.getLatestUserDomain(userId);
+
+          // Use user's domain if available, otherwise use default
+          let domain = DEFAULT_DOMAIN;
+          let pathPrefix = '';
+
+          if (domainResult.success && domainResult.domain) {
+            const userDomain = domainResult.domain;
+            domain = userDomain.domain.startsWith('http')
+              ? userDomain.domain
+              : `https://${userDomain.domain}`;
+            pathPrefix = userDomain.pathPrefix || '';
+          }
+
           const result = await shortlinkService.createShortUrl({
             longUrl,
             userId,
             ttl: ttlNumber
           });
 
-          if (result && result.shortKey && domain) {
+          if (result && result.shortKey) {
             const normalizedDomain = domain.replace(/\/+$/, '');
             const normalizedPrefix = pathPrefix
               ? `/${pathPrefix.replace(/^\/+|\/+$/g, '')}`
               : '';
             result.shortUrl = `${normalizedDomain}${normalizedPrefix}/${result.shortKey}`;
           }
-      
+
           return res.status(201).json({
             success: true,
             data: result
