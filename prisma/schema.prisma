@@ -12,7 +12,8 @@ model User {
   email        String   @unique
   passwordHash String
   name         String?
-  apiKey       String?  @unique
+  publicKey    String?  @unique
+  privateKey   String?  @unique
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 

@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const prisma = require('../lib/prisma');
+const encryption = require('../utils/encryption');
 const apiKeysService = require('./apiKeysService');
 const apiKeysGenerator = require('../utils/apiKeysGenerator');
 
@@ -12,7 +13,7 @@ const toSafeUser = (user) => ({
   id: user.id,
   email: user.email,
   name: user.name,
-  apiKey: user.apiKey,
+  publicKey: user.publicKey,
 });
 
 const generateToken = (userId) =>
@@ -29,19 +30,11 @@ module.exports = {
     }
 
     const passwordHash = await bcrypt.hash(password, BCRYPT_ROUNDS);
-
-    // const keyResult = await apiKeysService.generateAndStoreKey();
-    // const base64PrivateKey = Buffer.from(keyResult.privateKey).toString('base64');
-
-    // Generate public key from private key to store in PostgreSQL
-    // const publicKey = apiKeysGenerator.generatePublicKeyFromPrivate(keyResult.privateKey);
-
     const user = await prisma.user.create({
       data: {
         email: email.toLowerCase(),
         name,
         passwordHash,
-        // apiKey: publicKey
       }
     });
 
@@ -50,8 +43,6 @@ module.exports = {
     return {
       user: toSafeUser(user),
       token,
-      // privateKey: base64PrivateKey,
-      // keyExpiresIn: keyResult.ttl
     };
   },
 
@@ -74,7 +65,6 @@ module.exports = {
     return {
       user: toSafeUser(user),
       token,
-      // publicKey: user.apiKey  
     };
   },
 
@@ -92,11 +82,31 @@ module.exports = {
       throw new Error('User not found');
     }
 
+    let decryptedPublicKey = null;
+    let decryptedPrivateKey = null;
+
+    if (user.publicKey) {
+      try {
+        decryptedPublicKey = encryption.decrypt(user.publicKey);
+      } catch (error) {
+        console.error('Failed to decrypt public key:', error.message);
+      }
+    }
+
+    if (user.privateKey) {
+      try {
+        decryptedPrivateKey = encryption.decrypt(user.privateKey);
+      } catch (error) {
+        console.error('Failed to decrypt private key:', error.message);
+      }
+    }
+
     return {
       id: user.id,
       email: user.email,
       name: user.name,
-      // apiKey: user.apiKey,
+      publicKey: decryptedPublicKey,
+      privateKey: decryptedPrivateKey,
       domains: user.domains.map((domain) => ({
         id: domain.id,
         domain: domain.domain,

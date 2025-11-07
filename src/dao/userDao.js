@@ -1,26 +1,38 @@
 const prisma = require('../lib/prisma');
+const encryption = require('../utils/encryption');
 
 module.exports = {
   findUserByPublicKey: async (publicKey) => {
     try {
-      const user = await prisma.user.findUnique({
+      const users = await prisma.user.findMany({
         where: {
-          apiKey: publicKey
+          publicKey: {
+            not: null
+          }
         },
         select: {
           id: true,
           email: true,
           name: true,
-          apiKey: true,
+          publicKey: true,
+          privateKey: true,
           createdAt: true
         }
       });
 
-      if (!user) {
-        return { found: false };
+      for (const user of users) {
+        try {
+          const decryptedPublicKey = encryption.decrypt(user.publicKey);
+          if (decryptedPublicKey === publicKey) {
+            return { found: true, user };
+          }
+        } catch (error) {
+          console.error('Failed to decrypt public key for user:', user.id);
+          continue;
+        }
       }
 
-      return { found: true, user };
+      return { found: false };
     } catch (error) {
       return { found: false, error: error.message };
     }

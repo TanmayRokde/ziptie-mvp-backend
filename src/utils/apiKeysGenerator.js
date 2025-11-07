@@ -39,5 +39,12 @@ module.exports = {
     const hash = crypto.createHash('sha256');
     hash.update(publicKey);
     return hash.digest('hex');
+  },
+
+  // Create a hash of private key for storing in database
+  createPrivateKeyHash: (privateKey) => {
+    const hash = crypto.createHash('sha256');
+    hash.update(privateKey);
+    return hash.digest('hex');
   }
 };

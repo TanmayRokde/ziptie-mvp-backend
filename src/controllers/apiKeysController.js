@@ -1,27 +1,31 @@
 const apiKeysService = require('../services/apiKeysService');
+const encryption = require('../utils/encryption');
 const prisma = require('../lib/prisma');
 
 module.exports = {
   generateKey: async (req, res) => {
     try {
-      const userId = req.userId; // From authenticate middleware
+      const userId = req.userId;
 
-      // Generate new key pair and store in Redis
       const result = await apiKeysService.generateAndStoreKey();
+      const base64PrivateKey = Buffer.from(result.privateKey).toString('base64');
 
-      // Update user's public key in PostgreSQL (create or update)
+      const encryptedPublicKey = encryption.encrypt(result.publicKey);
+      const encryptedBase64PrivateKey = encryption.encrypt(base64PrivateKey);
+
       await prisma.user.update({
         where: { id: userId },
-        data: { apiKey: result.publicKey }
+        data: {
+          publicKey: encryptedPublicKey,
+          privateKey: encryptedBase64PrivateKey
+        }
       });
-
-      const base64PrivateKey = Buffer.from(result.privateKey).toString('base64');
 
       return res.status(201).json({
         success: true,
-        message: 'Key pair generated and stored successfully. Save your private key - this is a one-time view!',
+        message: 'Key pair generated and stored successfully.',
         data: {
-          privateKey: base64PrivateKey, // Send only base64 version for one-time view
+          privateKey: base64PrivateKey, 
           ttlSeconds: result.ttl,
           expiresAt: new Date(Date.now() + result.ttl * 1000).toISOString(),
         }
