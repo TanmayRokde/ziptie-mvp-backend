@@ -39,6 +39,14 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(morgan("dev"));
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    message: "ziptie backend",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use("/api", routes);
 
 app.listen(PORT, () => {
