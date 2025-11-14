@@ -34,20 +34,27 @@ const allowAllOrigins = allowedOrigins.includes("*");
 
 const normalizeOrigin = (origin = "") => origin.replace(/\/$/, "");
 
+console.log("[cors] allowed origins:", allowedOrigins);
+
 const corsOptions =
   allowedOrigins.length || allowAllOrigins
     ? {
         origin(origin, callback) {
+          console.log("[cors] request origin:", origin || "<none>");
+
           if (!origin) {
             return callback(null, true);
           }
 
           const normalizedOrigin = normalizeOrigin(origin);
+          console.log("[cors] normalized origin:", normalizedOrigin);
 
           if (allowAllOrigins || allowedOrigins.includes(normalizedOrigin)) {
+            console.log("[cors] origin allowed");
             return callback(null, true);
           }
 
+          console.warn("[cors] origin rejected:", normalizedOrigin);
           return callback(new Error("Not allowed by CORS"));
         },
       }
