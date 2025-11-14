@@ -65,6 +65,10 @@ const PORT = process.env.PORT || 3000;
 
 redisConfig.connect();
 app.use(helmet());
+app.use((req, res, next) => {
+  console.log("[request]", req.method, req.originalUrl, "origin:", req.headers.origin || "<none>");
+  next();
+});
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 app.use(express.json());
