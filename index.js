@@ -9,12 +9,25 @@ const morgan = require("morgan");
 const redisConfig = require("./src/config/redis");
 const routes = require("./src/routes");
 
-const parseOrigins = () =>
-  (process.env.CORS_ALLOWED_ORIGINS || "")
+const defaultAllowedOrigins = [
+  "https://ziptie-frontend-beta.vercel.app",
+  "https://ziptie-frontend.vercel.app",
+  "http://localhost:5173",
+];
+
+const parseOrigins = () => {
+  const envOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
     .split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean)
-    .map((origin) => origin.replace(/\/$/, ""));
+    .filter(Boolean);
+
+  const combined = [...defaultAllowedOrigins, ...envOrigins];
+  const normalized = Array.from(
+    new Set(combined.map((origin) => origin.replace(/\/$/, "")))
+  ).filter(Boolean);
+
+  return normalized;
+};
 
 const allowedOrigins = parseOrigins();
 const allowAllOrigins = allowedOrigins.includes("*");
