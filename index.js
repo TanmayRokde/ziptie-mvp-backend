@@ -67,10 +67,46 @@ redisConfig.connect();
 app.use(helmet());
 app.use((req, res, next) => {
   console.log("[request]", req.method, req.originalUrl, "origin:", req.headers.origin || "<none>");
-  next();
+
+  const origin = req.headers.origin;
+  if (!origin || allowAllOrigins || allowedOrigins.includes(normalizeOrigin(origin))) {
+    res.header("Access-Control-Allow-Origin", origin || "*");
+  }
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    req.headers["access-control-request-headers"] || "Content-Type, Authorization"
+  );
+  res.header("Vary", "Origin");
+
+  if (req.method === "OPTIONS") {
+    console.log("[request] handling OPTIONS preflight for", req.originalUrl);
+    const normalizedOrigin = normalizeOrigin(origin || "");
+    if (
+      !origin ||
+      allowAllOrigins ||
+      allowedOrigins.includes(normalizedOrigin)
+    ) {
+      return res.sendStatus(204);
+    }
+
+    console.warn("[cors] OPTIONS blocked:", normalizedOrigin);
+    return res.status(403).json({ message: "Not allowed by CORS" });
+  }
+
+  if (!origin) {
+    return next();
+  }
+
+  const normalizedOrigin = normalizeOrigin(origin);
+  if (allowAllOrigins || allowedOrigins.includes(normalizedOrigin)) {
+    return next();
+  }
+
+  console.warn("[cors] request blocked:", normalizedOrigin);
+  return res.status(403).json({ message: "Not allowed by CORS" });
 });
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+
 app.use(express.json());
 app.use(morgan("dev"));
 
