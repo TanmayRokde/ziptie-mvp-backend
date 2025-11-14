@@ -9,21 +9,36 @@ const morgan = require("morgan");
 const redisConfig = require("./src/config/redis");
 const routes = require("./src/routes");
 
-const allowedOrigins = (process.env.CORS_ALLOWED_ORIGINS || "")
-  .split(",")
-  .map((origin) => origin.trim())
-  .filter(Boolean);
+const parseOrigins = () =>
+  (process.env.CORS_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+    .map((origin) => origin.replace(/\/$/, ""));
 
-const corsOptions = allowedOrigins.length
-  ? {
-      origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-          return callback(null, true);
-        }
-        return callback(new Error("Not allowed by CORS"));
-      },
-    }
-  : undefined;
+const allowedOrigins = parseOrigins();
+const allowAllOrigins = allowedOrigins.includes("*");
+
+const normalizeOrigin = (origin = "") => origin.replace(/\/$/, "");
+
+const corsOptions =
+  allowedOrigins.length || allowAllOrigins
+    ? {
+        origin(origin, callback) {
+          if (!origin) {
+            return callback(null, true);
+          }
+
+          const normalizedOrigin = normalizeOrigin(origin);
+
+          if (allowAllOrigins || allowedOrigins.includes(normalizedOrigin)) {
+            return callback(null, true);
+          }
+
+          return callback(new Error("Not allowed by CORS"));
+        },
+      }
+    : undefined;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +46,7 @@ const PORT = process.env.PORT || 3000;
 redisConfig.connect();
 app.use(helmet());
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 app.use(express.json());
 app.use(morgan("dev"));
 
