@@ -72,6 +72,20 @@ app.use(morgan("dev"));
 
 app.use("/api", routes);
 
+app.use((err, req, res, next) => {
+  if (err && err.message === "Not allowed by CORS") {
+    console.warn("[cors] blocking request for origin:", req.headers.origin);
+    return res.status(403).json({ message: "Not allowed by CORS" });
+  }
+
+  if (err) {
+    console.error("[server:error]", err);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+
+  return next();
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
