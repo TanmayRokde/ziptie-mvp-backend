@@ -1,11 +1,15 @@
-# ziptie-mvp-backend
+# ziptie-mvp-backend ⚙️
+
+> Developed by [TanmayRokde](https://github.com/TanmayRokde) & [pradnyaakumbhar](https://github.com/pradnyaakumbhar)
 
 ![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
 ![Express](https://img.shields.io/badge/express-5.x-black)
 ![Prisma](https://img.shields.io/badge/prisma-ORM-blue)
 ![Redis](https://img.shields.io/badge/cache-redis-orange)
+![Status](https://img.shields.io/badge/status-alpha-purple)
 
-ZipTie’s unified backend for the MVP. It powers authentication, user management, API key issuance, and branded short-link creation while orchestrating Prisma, Redis, and the Redis microservice.
+> **ZipTie Control Tower**  
+> This service is the central nervous system for ZipTie: auth, users, API keys, and the orchestration layer that talks to Redis plus the microservice.
 
 ---
 
@@ -25,7 +29,7 @@ ZipTie’s unified backend for the MVP. It powers authentication, user managemen
 
 ---
 
-## Architecture
+## Architecture 🏗️
 
 ```
 ┌──────────┐    REST/JSON    ┌────────────────────┐
@@ -41,7 +45,7 @@ ZipTie’s unified backend for the MVP. It powers authentication, user managemen
 - API routes mounted under `/api`.
 - Redis microservice handles raw key/value persistence; this backend focuses on auth, domain logic, and orchestration.
 
-## Tech Stack
+## Tech Stack 🧰
 
 - **Runtime:** Node.js 18+, Express 5
 - **Database:** Prisma ORM (SQLite locally, Postgres/MySQL/PlanetScale compatible)
@@ -49,14 +53,14 @@ ZipTie’s unified backend for the MVP. It powers authentication, user managemen
 - **Auth:** JWT + bcrypt password hashing
 - **Tooling:** pnpm/nodemon, Prisma migrations
 
-## Prerequisites
+## Prerequisites ✅
 
 - Node.js 18 or newer
 - pnpm (recommended) or npm
 - Redis instance (Docker, local, or Upstash tokens)
 - SQLite (bundled) or a managed SQL database for production
 
-## Environment Variables
+## Environment Variables 🔐
 
 Create `.env` next to `index.js`:
 
@@ -92,7 +96,7 @@ DEMO_FALLBACK_BASE_URL=https://links.ziptie.dev
 DEMO_SHORT_TTL=3600
 ```
 
-## Setup & Installation
+## Setup & Installation 🧱
 
 ```bash
 pnpm install
@@ -102,7 +106,7 @@ pnpm prisma migrate dev --name init
 
 If you are targeting Postgres/MySQL, update `DATABASE_URL` and run `pnpm prisma migrate deploy`.
 
-## Running Locally
+## Running Locally 🏃‍♂️
 
 ```bash
 pnpm dev      # nodemon index.js
@@ -114,7 +118,7 @@ Server listens on `PORT` (default `4000`) and exposes REST endpoints under `/api
 
 Use `curl http://localhost:4000/api/health` to verify startup.
 
-## API Surface
+## API Surface 🌐
 
 | Method | Path | Description | Auth |
 | ------ | ---- | ----------- | ---- |
@@ -131,7 +135,7 @@ Use `curl http://localhost:4000/api/health` to verify startup.
 
 Check `src/routes/*.js` for the full matrix, including domain management routes.
 
-## Data & Services
+## Data & Services 🧠
 
 - **Prisma Client:** `src/lib/prisma.js` exports a singleton to avoid multiple connections in dev hot reload.
 - **Redis Client:** `src/config/redis.js` decides between Upstash REST and native `redis@5`.
@@ -139,13 +143,13 @@ Check `src/routes/*.js` for the full matrix, including domain management routes.
 - **API Keys:** AES-style encryption handled in `src/utils/encryption.js`; generation logic in `src/utils/apiKeysGenerator.js`.
 - **Auth Middleware:** `src/middleware/auth.js` + `authToken.js` decode JWTs and gate protected routes.
 
-## Development Tips
+## Development Tips 💡
 
 - Enable verbose logging by setting `DEBUG=ziptie:*` (if you add `debug` statements).
 - Prisma Studio: run `pnpm prisma studio` to inspect your SQLite/Postgres tables.
 - Seed scripts can live in `prisma/seed.js`; call via `pnpm prisma db seed`.
 
-## Testing & Quality
+## Testing & Quality 🧪
 
 Formal automated tests are not wired yet. Recommended next steps:
 
@@ -153,7 +157,7 @@ Formal automated tests are not wired yet. Recommended next steps:
 - Use `supertest` for integration coverage around `src/routes`.
 - Consider ESLint + TypeScript for type safety (currently plain JS).
 
-## Deployment Notes
+## Deployment Notes 🚀
 
 - Production environments should set `NODE_ENV=production` to disable Prisma query logging and to prevent dev defaults (like SQLite) from leaking in.
 - Ensure Redis/Upstash credentials are injected along with `URL_SHORTENER_SERVICE_URL`.
