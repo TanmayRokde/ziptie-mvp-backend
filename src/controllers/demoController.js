@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 const shortlinkService = require('../services/shortlinkService');
 
+const DEFAULT_DOMAIN = process.env.DEFAULT_DOMAIN;
+
 const createFallbackResponse = (url) => {
   const baseUrl = process.env.DEMO_FALLBACK_BASE_URL || 'https://links.ziptie.dev';
   const shortKey = crypto
@@ -36,6 +38,12 @@ module.exports = {
         userId: 'demo-user',
         ttl: parseInt(process.env.DEMO_SHORT_TTL || '3600', 10)
       });
+
+      // Add domain prefix to create full short URL
+      if (result && result.shortKey) {
+        const normalizedDomain = DEFAULT_DOMAIN.replace(/\/+$/, '');
+        result.shortUrl = `${normalizedDomain}/${result.shortKey}`;
+      }
 
       return res.status(201).json({
         success: true,
