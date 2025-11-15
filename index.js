@@ -29,7 +29,6 @@ app.use((req, res, next) => {
 
   if (req.method === "OPTIONS") {
     console.log("[request] handling OPTIONS preflight for", req.originalUrl);
-    const normalizedOrigin = normalizeOrigin(origin || "");
     return res.sendStatus(204);
   }
 
