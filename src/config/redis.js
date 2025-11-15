@@ -2,14 +2,35 @@ const redis = require('redis');
 
 let client = null;
 
+const buildRedisConfig = () => {
+  if (process.env.UPSTASH_REDIS_URL) {
+    return {
+      url: process.env.UPSTASH_REDIS_URL,
+      socket: {
+        tls: process.env.UPSTASH_REDIS_URL.startsWith('rediss://')
+      }
+    };
+  }
+
+  if (process.env.REDIS_URL) {
+    return {
+      url: process.env.REDIS_URL
+    };
+  }
+
+  return {
+    socket: {
+      host: process.env.REDIS_HOST || '127.0.0.1',
+      port: process.env.REDIS_PORT || 6379
+    },
+    password: process.env.REDIS_PASSWORD || undefined
+  };
+};
+
 module.exports = {
   connect: async () => {
     try {
-      client = redis.createClient({
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || 6379,
-        password: process.env.REDIS_PASSWORD || undefined
-      });
+      client = redis.createClient(buildRedisConfig());
 
       client.on('error', (err) => {
         console.error('Redis Error:', err);
@@ -21,7 +42,6 @@ module.exports = {
 
       await client.connect();
       return client;
-      
     } catch (error) {
       console.error('Failed to connect to Redis:', error);
       throw error;
