@@ -1,0 +1,28 @@
+<svg width="600" height="200" viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981">
+        <animate attributeName="stop-color" values="#10b981;#0ea5e9;#10b981" dur="5s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#6366f1">
+        <animate attributeName="stop-color" values="#6366f1;#a855f7;#6366f1" dur="5s" repeatCount="indefinite"/>
+      </stop>
+    </linearGradient>
+  </defs>
+
+  <rect width="600" height="200" fill="#030712"/>
+
+  <path fill="url(#grad)" opacity="0.8">
+    <animate attributeName="d" dur="12s" repeatCount="indefinite"
+      values="
+        M0,140 C120,100 220,180 340,130 C420,100 520,150 600,110 L600,200 L0,200 Z;
+        M0,120 C120,60 220,160 340,110 C420,140 520,90 600,130 L600,200 L0,200 Z;
+        M0,140 C120,100 220,180 340,130 C420,100 520,150 600,110 L600,200 L0,200 Z
+      "/>
+  </path>
+
+  <circle cx="520" cy="70" r="14" fill="#ffffff" opacity="0.3">
+    <animate attributeName="cx" values="520;80;520" dur="9s" repeatCount="indefinite"/>
+    <animate attributeName="cy" values="70;40;70" dur="9s" repeatCount="indefinite"/>
+  </circle>
+</svg>

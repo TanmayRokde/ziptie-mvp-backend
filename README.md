@@ -8,6 +8,10 @@
 ![Redis](https://img.shields.io/badge/cache-redis-orange)
 ![Status](https://img.shields.io/badge/status-alpha-purple)
 
+<p align="center">
+  <img src="./docs/assets/hero-wave.svg" width="600" height="200" alt="Animated ZipTie backend gradient" />
+</p>
+
 > **ZipTie Control Tower**  
 > This service is the central nervous system for ZipTie: auth, users, API keys, and the orchestration layer that talks to Redis plus the microservice.
 
