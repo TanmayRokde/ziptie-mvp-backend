@@ -1,86 +1,160 @@
 # ziptie-mvp-backend
 
-ZipTie’s monolithic MVP backend. It exposes REST endpoints for authentication, user management, API keys, and creating/consuming branded short links while coordinating Redis, Prisma, and the dedicated Redis microservice.
+![Node.js](https://img.shields.io/badge/node-%3E%3D18-brightgreen)
+![Express](https://img.shields.io/badge/express-5.x-black)
+![Prisma](https://img.shields.io/badge/prisma-ORM-blue)
+![Redis](https://img.shields.io/badge/cache-redis-orange)
 
-## Stack
+ZipTie’s unified backend for the MVP. It powers authentication, user management, API key issuance, and branded short-link creation while orchestrating Prisma, Redis, and the Redis microservice.
 
-- Node.js 18+ with Express 5
-- Prisma ORM (SQLite locally, Postgres/MySQL compatible in production)
-- Redis or Upstash Redis REST for caching/short key storage
-- JWT authentication and bcrypt password hashing
+---
+
+## Table of Contents
+
+1. [Architecture](#architecture)
+2. [Tech Stack](#tech-stack)
+3. [Prerequisites](#prerequisites)
+4. [Environment Variables](#environment-variables)
+5. [Setup & Installation](#setup--installation)
+6. [Running Locally](#running-locally)
+7. [API Surface](#api-surface)
+8. [Data & Services](#data--services)
+9. [Development Tips](#development-tips)
+10. [Testing & Quality](#testing--quality)
+11. [Deployment Notes](#deployment-notes)
+
+---
+
+## Architecture
+
+```
+┌──────────┐    REST/JSON    ┌────────────────────┐
+│ Frontend │ ──────────────► │ ziptie-mvp-backend │
+└──────────┘                 └─────────┬──────────┘
+                                        │
+          ┌──────────────┬──────────────┼──────────────┐
+          ▼              ▼              ▼              ▼
+   Prisma ORM      Redis/Upstash   Redis microservice  3rd party APIs
+   (SQLite dev)    (session/cache) (short key storage) (email, etc.)
+```
+
+- API routes mounted under `/api`.
+- Redis microservice handles raw key/value persistence; this backend focuses on auth, domain logic, and orchestration.
+
+## Tech Stack
+
+- **Runtime:** Node.js 18+, Express 5
+- **Database:** Prisma ORM (SQLite locally, Postgres/MySQL/PlanetScale compatible)
+- **Cache:** Redis 5 TCP or Upstash REST
+- **Auth:** JWT + bcrypt password hashing
+- **Tooling:** pnpm/nodemon, Prisma migrations
 
 ## Prerequisites
 
-- Node.js 18+
-- npm or pnpm (recommended)
-- Redis instance (local, Docker, or Upstash)
-- A database supported by Prisma (default `.env` uses SQLite)
+- Node.js 18 or newer
+- pnpm (recommended) or npm
+- Redis instance (Docker, local, or Upstash tokens)
+- SQLite (bundled) or a managed SQL database for production
 
-## Environment
+## Environment Variables
 
-Create a `.env` next to `index.js` and provide at least:
+Create `.env` next to `index.js`:
 
 ```
 PORT=4000
-DATABASE_URL="file:./dev.db"         # SQLite by default – replace with postgres://... in prod
+DATABASE_URL="file:./dev.db"          # Replace with postgres://... in prod
+NODE_ENV=development
+
+# Auth
 JWT_SECRET="super-secret"
 JWT_EXPIRY="7d"
 BCRYPT_ROUNDS=10
-ENCRYPTION_KEY="32-char-hex-string"  # used for API key encryption
 
-# Redis (choose one)
+# Encryption (for API keys)
+ENCRYPTION_KEY="32-char-hex-string"
+
+# Redis (choose one setup)
 REDIS_URL=redis://localhost:6379
-# or granular fields:
+# or granular:
 REDIS_HOST=127.0.0.1
 REDIS_PORT=6379
 REDIS_USERNAME=
 REDIS_PASSWORD=
 
-# Upstash fallback (optional)
+# Upstash REST fallback
 UPSTASH_REDIS_REST_URL=
 UPSTASH_REDIS_REST_TOKEN=
 
-# Short link + demo helpers
+# Short link helpers
 URL_SHORTENER_SERVICE_URL=https://redis-microservice.example.com
 DEFAULT_DOMAIN=links.ziptie.dev
 DEMO_FALLBACK_BASE_URL=https://links.ziptie.dev
 DEMO_SHORT_TTL=3600
 ```
 
-## Install & Run
+## Setup & Installation
 
 ```bash
-pnpm install        # or npm install
+pnpm install
 pnpm prisma generate
 pnpm prisma migrate dev --name init
-pnpm dev            # nodemon
-# or
-pnpm start
 ```
 
-The server listens on `PORT` (default `4000`) and mounts all API routes under `/api`.
+If you are targeting Postgres/MySQL, update `DATABASE_URL` and run `pnpm prisma migrate deploy`.
 
-## Key Endpoints
+## Running Locally
 
-| Method & Path | Purpose |
-| ------------- | ------- |
-| `GET /api/health` | Simple liveness check |
-| `POST /api/auth/register` / `POST /api/auth/login` | Email/password user flows with JWT responses |
-| `GET /api/users/me` | Fetch profile for authenticated user |
-| `POST /api/urls/shorten` | Create a short link directly against Redis |
-| `POST /api/shortlink/resolve` | Resolve a key via the Redis microservice |
-| `POST /api/keys` | Issue API keys for automation |
-| `GET /api/demo/sample` | Create demo short URLs for marketing |
+```bash
+pnpm dev      # nodemon index.js
+# or
+pnpm start    # node index.js
+```
 
-Review `src/routes/*.js` for the authoritative list.
+Server listens on `PORT` (default `4000`) and exposes REST endpoints under `/api`.
 
-## Development Notes
+Use `curl http://localhost:4000/api/health` to verify startup.
 
-- `src/lib/prisma.js` handles the singleton Prisma client.
-- `src/config/redis.js` automatically picks Upstash REST when tokens are provided.
-- Short link creation lives in `src/services/shortlinkService.js` and proxies requests to the Redis microservice for multi-region deployments.
-- Auth middleware lives in `src/middleware/`.
+## API Surface
 
-## Testing & Formatting
+| Method | Path | Description | Auth |
+| ------ | ---- | ----------- | ---- |
+| `GET` | `/api/health` | Liveness probe | None |
+| `POST` | `/api/auth/register` | Create account (email/password) | None |
+| `POST` | `/api/auth/login` | Issue JWT | None |
+| `GET` | `/api/users/me` | Current user profile | Bearer token |
+| `PATCH` | `/api/users/me` | Update profile metadata | Bearer token |
+| `POST` | `/api/urls/shorten` | Create short link (direct Redis) | Bearer token |
+| `POST` | `/api/shortlink/resolve` | Resolve via microservice | Bearer token or service key |
+| `POST` | `/api/keys` | Generate API key | Bearer token |
+| `GET` | `/api/keys` | List user API keys | Bearer token |
+| `POST` | `/api/demo/sample` | Create marketing/demo links | None (rate-limit recommended) |
 
-Formal tests are not yet set up. Consider using tools such as `supertest` or `vitest` for new features. ESLint/TSC are not configured for the backend, so run formatters manually if needed.
+Check `src/routes/*.js` for the full matrix, including domain management routes.
+
+## Data & Services
+
+- **Prisma Client:** `src/lib/prisma.js` exports a singleton to avoid multiple connections in dev hot reload.
+- **Redis Client:** `src/config/redis.js` decides between Upstash REST and native `redis@5`.
+- **Short Links:** `src/services/shortlinkService.js` proxies to the Redis microservice (`URL_SHORTENER_SERVICE_URL`) for region-aware storage.
+- **API Keys:** AES-style encryption handled in `src/utils/encryption.js`; generation logic in `src/utils/apiKeysGenerator.js`.
+- **Auth Middleware:** `src/middleware/auth.js` + `authToken.js` decode JWTs and gate protected routes.
+
+## Development Tips
+
+- Enable verbose logging by setting `DEBUG=ziptie:*` (if you add `debug` statements).
+- Prisma Studio: run `pnpm prisma studio` to inspect your SQLite/Postgres tables.
+- Seed scripts can live in `prisma/seed.js`; call via `pnpm prisma db seed`.
+
+## Testing & Quality
+
+Formal automated tests are not wired yet. Recommended next steps:
+
+- Add unit tests with Vitest or Jest for services.
+- Use `supertest` for integration coverage around `src/routes`.
+- Consider ESLint + TypeScript for type safety (currently plain JS).
+
+## Deployment Notes
+
+- Production environments should set `NODE_ENV=production` to disable Prisma query logging and to prevent dev defaults (like SQLite) from leaking in.
+- Ensure Redis/Upstash credentials are injected along with `URL_SHORTENER_SERVICE_URL`.
+- The repo ships with `vercel.json` for serverless deployment, but it can also run on traditional Node servers or Docker. Remember to run `pnpm prisma migrate deploy` before starting the server in CI/CD.
