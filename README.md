@@ -58,9 +58,11 @@
 ## Prerequisites ✅
 
 - Node.js 18 or newer
-- pnpm (recommended) or npm
+- pnpm
 - Redis instance (Docker, local, or Upstash tokens)
 - SQLite (bundled) or a managed SQL database for production
+
+> Package management is pnpm-only; `pnpm-lock.yaml` is the single source of truth. Avoid generating `package-lock.json`.
 
 ## Environment Variables 🔐
 
