@@ -4,7 +4,7 @@ const shortlinkService = require('../services/shortlinkService');
 const DEFAULT_DOMAIN = process.env.DEFAULT_DOMAIN;
 
 const createFallbackResponse = (url) => {
-  const baseUrl = process.env.DEMO_FALLBACK_BASE_URL || 'https://links.ziptie.dev';
+  const baseUrl = DEFAULT_DOMAIN || 'https://links.ziptie.dev';
   const shortKey = crypto
     .createHash('sha256')
     .update(`${url}-${Date.now()}-${Math.random()}`)
