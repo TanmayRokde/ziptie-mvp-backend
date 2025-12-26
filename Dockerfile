@@ -1,7 +1,11 @@
-FROM node:20-alpine AS build
+FROM node:20-bullseye-slim
 WORKDIR /app
 
-# install dependencies
+# install dependencies and OpenSSL for Prisma
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package.json pnpm-lock.yaml ./
 COPY prisma ./prisma
 RUN npm install -g pnpm
