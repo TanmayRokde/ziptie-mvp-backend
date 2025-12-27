@@ -48,6 +48,7 @@ app.get("/", (req, res) => {
 
 app.use("/api", routes);
 
+// For local development
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
