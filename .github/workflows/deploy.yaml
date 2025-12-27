@@ -89,7 +89,7 @@ jobs:
             frontend:
               image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/ziptie-frontend:latest
               ports:
-                - "8080:80"
+                - "80:80"
               env_file:
                 - ${ENV_DIR}/frontend.env
               depends_on:
