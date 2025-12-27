@@ -42,10 +42,14 @@ jobs:
     steps:
       - name: Prepare SSH key
         env:
-          SSH_KEY_B64: ${{ secrets.EC2_SSH_KEY }}
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
         run: |
           install -m 700 -d ~/.ssh
-          echo "$SSH_KEY_B64" | base64 -d > ~/.ssh/id_rsa
+          if echo "$SSH_KEY" | base64 -d >/tmp/id_rsa 2>/dev/null; then
+            mv /tmp/id_rsa ~/.ssh/id_rsa
+          else
+            printf '%s' "$SSH_KEY" > ~/.ssh/id_rsa
+          fi
           chmod 600 ~/.ssh/id_rsa
           cat > ~/.ssh/config <<EOF
           Host deploy-target
