@@ -111,6 +111,7 @@ jobs:
           aws ecr get-login-password --region "${AWS_REGION}" | sudo docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
           cd /opt/ziptie
+          sudo ${COMPOSE_BIN} down --remove-orphans || true
           sudo ${COMPOSE_BIN} pull
-          sudo ${COMPOSE_BIN} up -d
+          sudo ${COMPOSE_BIN} up -d --force-recreate
           EOSSH
